@@ -1,5 +1,6 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
+const cTable = require('console.table');
 
 const userChoice = [
   "View All Departments",
@@ -118,17 +119,21 @@ viewRole = () => {
 // View Employees
 
 viewEmployee = () => {
-  connection.query("SELECT * FROM employee_tracker.employee;", function (
+  connection.query("SELECT * FROM employee_tracker.employee, employee_tracker.role, employee_tracker.department;", function (
     err,
     results
   ) {
+    console.log(results)
     for (i = 0; i < results.length; i++) {
       console.table([
         {
           Id: results[i].id,
           First_Name: results[i].first_name,
           Last_Name: results[i].last_name,
-          Role_Id: results[i].role_id,
+          Role: results[i].title,
+          Department: results[i].name,
+          Salary: results[i].salary,
+          Manager: results[i].manager_id,
         },
       ]);
     }

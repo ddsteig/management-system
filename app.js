@@ -1,6 +1,6 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
-const cTable = require('console.table');
+const cTable = require("console.table");
 
 const userChoice = [
   "View All Departments",
@@ -74,59 +74,60 @@ promptUser = () => {
     });
 };
 
-// View departments
+// View departments displays the available departments
 
 viewDept = () => {
   connection.query("SELECT * FROM employee_tracker.department;", function (
     err,
     results
   ) {
+    let depts = [];
     for (i = 0; i < results.length; i++) {
-      console.table([
-        {
-          Id: results[i].id,
-          Department: results[i].name,
-        },
-      ]);
+      let dept = {
+        Id: results[i].id,
+        Department: results[i].name,
+      };
+      depts.push(dept);
     }
+    console.table(depts);
     promptUser();
     if (err) throw err;
   });
 };
 
-// View Roles
+// View Roles joins roles and department tables together and displays role, salary, and the department the role falls under
 
 viewRole = () => {
-  connection.query("SELECT * FROM employee_tracker.role;", function (
-    err,
-    results
-  ) {
-    for (i = 0; i < results.length; i++) {
-      console.table([
-        {
+  connection.query(
+    "SELECT role.id, role.title, role.salary, department.name FROM (role INNER JOIN department ON role.department_id = department.id);",
+    function (err, results) {
+      let roles = [];
+      for (i = 0; i < results.length; i++) {
+        let role = {
           Id: results[i].id,
           Title: results[i].title,
           Salary: results[i].salary,
-          Department_Id: results[i].department_id,
-        },
-      ]);
+          Department: results[i].name,
+        };
+        roles.push(role);
+      }
+      console.table(roles);
+      promptUser();
+      if (err) throw err;
     }
-    promptUser();
-    if (err) throw err;
-  });
+  );
 };
 
-// View Employees
+// View Employees joins the 3 tables together and returns the data for the employee with what role and department they fall under and how much they make
 
 viewEmployee = () => {
-  connection.query("SELECT * FROM employee_tracker.employee, employee_tracker.role, employee_tracker.department;", function (
-    err,
-    results
-  ) {
-    console.log(results)
-    for (i = 0; i < results.length; i++) {
-      console.table([
-        {
+  connection.query(
+    "SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name, employee.manager_id FROM ((employee INNER JOIN role ON employee.role_id = role.id) INNER JOIN department ON role.department_id = department.id) ORDER BY employee.id ASC;",
+    function (err, results) {
+      let employees = [];
+
+      for (i = 0; i < results.length; i++) {
+        let employee = {
           Id: results[i].id,
           First_Name: results[i].first_name,
           Last_Name: results[i].last_name,
@@ -134,26 +135,201 @@ viewEmployee = () => {
           Department: results[i].name,
           Salary: results[i].salary,
           Manager: results[i].manager_id,
-        },
-      ]);
+        };
+        employees.push(employee);
+      }
+      console.table(employees);
+      promptUser();
+      if (err) throw err;
     }
-    promptUser();
-    if (err) throw err;
-  });
+  );
 };
 
-// Add Departments
+// Add Departments allows depts. to be added
 
-addDept = () => {};
+addDept = () => {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "dept",
+        message: "Enter a new Department:",
+      },
+    ])
+    .then((answer) => {
+      connection.query(
+        "INSERT INTO department SET ?",
+        {
+          name: answer.dept,
+        },
+        function (err, res) {
+          if (err) throw err;
+          console.log("Department added.\n");
+          promptUser();
+        }
+      );
+    });
+};
 
-// Add Roles
+// Add Roles allows roles to be added and allows user to select an existing dept. to add it to and updates it with the corresponding dept_id
 
-addRole = () => {};
+addRole = () => {
+  let departments = [];
+  connection.query("SELECT * FROM department", function (err, results) {
+    for (i = 0; i < results.length; i++) {
+      let department = {
+        name: results[i].name,
+        value: results[i].id,
+      };
+      departments.push(department);
+    }
+  });
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "title",
+        message: "Enter a new Role:",
+      },
+      {
+        type: "input",
+        name: "salary",
+        message: "Enter Salary:",
+      },
+      {
+        type: "list",
+        name: "choice",
+        message: "Select Department:",
+        choices: departments,
+      },
+    ])
+    .then((answer) => {
+      connection.query(
+        "INSERT INTO role SET ?",
+        {
+          title: answer.title,
+          salary: answer.salary,
+          department_id: answer.choice,
+        },
+        function (err, res) {
+          if (err) throw err;
+          console.log("Role added.\n");
+          promptUser();
+        }
+      );
+    });
+};
 
-// Add Employees
+// Add Employees allows employees to be added and allows the user to select an existing role to be selected and updates it with the corresponding role_id
 
-addEmployee = () => {};
+addEmployee = () => {
+  let roles = [];
+  connection.query("SELECT * FROM role", function (err, results) {
+    for (i = 0; i < results.length; i++) {
+      let role = {
+        name: results[i].title,
+        value: results[i].id,
+      };
+      roles.push(role);
+    }
+  });
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "firstname",
+        message: "Enter Employee's first name:",
+      },
+      {
+        type: "input",
+        name: "lastname",
+        message: "Enter Employee's last name:",
+      },
+      {
+        type: "list",
+        name: "choice",
+        message: "Select Role:",
+        choices: roles,
+      },
+    ])
+    .then((answer) => {
+      connection.query(
+        "INSERT INTO employee SET ?",
+        {
+          first_name: answer.firstname,
+          last_name: answer.lastname,
+          role_id: answer.choice,
+        },
+        function (err, res) {
+          if (err) throw err;
+          console.log("Employee added.\n");
+          promptUser();
+        }
+      );
+    });
+};
 
-// Update Employee
+// Update Employee Roles allows user to update an Employees role from the existing roles
 
-updateEmployee = () => {};
+updateEmployee = () => {
+  let employees = [];
+  connection.query("SELECT * FROM employee", function (err, results) {
+    for (i = 0; i < results.length; i++) {
+      let name = results[i].first_name + " " + results[i].last_name;
+      let employee = {
+        name: name,
+        value: results[i].id,
+      };
+      employees.push(employee);
+    }
+  });
+
+  let roles = [];
+  connection.query("SELECT * FROM role", function (err, results) {
+    for (i = 0; i < results.length; i++) {
+      let role = {
+        name: results[i].title,
+        value: results[i].id,
+      };
+      roles.push(role);
+    }
+
+    updateRole();
+  });
+
+  updateRole = () => {
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "nameid",
+          message: "Select Employee to update:",
+          choices: employees,
+        },
+        {
+          type: "list",
+          name: "roleid",
+          message: "Select new Role:",
+          choices: roles,
+        },
+      ])
+      .then((answer) => {
+        connection.query(
+          "UPDATE employee SET ? WHERE ?",
+          [
+            {
+              role_id: answer.roleid,
+            },
+            {
+              id: answer.nameid,
+            },
+          ],
+          function (err, res) {
+            if (err) throw err;
+            console.log("Employee Role updated.");
+            promptUser();
+          }
+        );
+      });
+  };
+};

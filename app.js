@@ -1,6 +1,10 @@
+// Dependencies
+
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const cTable = require("console.table");
+
+// Array of available user options
 
 const userChoice = [
   "View All Departments",
@@ -13,6 +17,8 @@ const userChoice = [
   "Exit Program",
 ];
 
+// Connection to MySQL
+
 const connection = mysql.createConnection({
   host: "localhost",
   // Your port; if not 3306
@@ -20,7 +26,7 @@ const connection = mysql.createConnection({
   // Your username
   user: "root",
   // Your password
-  password: "Xd23seJ4!",
+  password: "secret",
   database: "employee_tracker",
 });
 
@@ -28,6 +34,8 @@ connection.connect(function (err) {
   if (err) throw err;
   promptUser();
 });
+
+// Node prompt with switch cases that call functions depending on the index selected from the array
 
 promptUser = () => {
   inquirer

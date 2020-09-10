@@ -4,7 +4,7 @@
 
   [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-  ![management-system]()
+  ![management-system](https://github.com/ddsteig/management-system/blob/master/assets/viewall.jpg)
 
   ## Table of Contents
   - [Description](#description)
@@ -21,15 +21,15 @@
   
   Through use of node, inquirer, and mysql; A user is able to update an existing employee database with new departments, roles, and employees.
   
-  ![addemployee]()
+  ![addemployee](https://github.com/ddsteig/management-system/blob/master/assets/addemployee.jpg)
 
   They can also update an existing employee's role. 
   
-  ![update-role]() 
+  ![update-role](https://github.com/ddsteig/management-system/blob/master/assets/updaterole.jpg) 
   
   The application will connect to MySQL and allow for real time updates to the database and also allow the user to get the information from the database.
 
-  ![connection]()
+  ![connection](https://github.com/ddsteig/management-system/blob/master/assets/connection.jpg)
   
   <hr>
   
